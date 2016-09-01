@@ -1,0 +1,10 @@
+J:	-1
+U:	1
+dim:	2
+sies:	10
+IC:	[['z',1,1]]
+tstep:	0.0001
+tobs:	0.005
+T:	2
+ncycles:	2
+outfile:	outtext.dat

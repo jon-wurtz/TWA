@@ -55,13 +55,6 @@ class hamiltonian():
             '''
 
     
-    def print_hamiltonian(self):
-        '''
-        Displays a graphical form of the hamiltonian.
-        This is purely cosmetic...
-        '''
-                
-        pass
     
     def dH(self,data,ind):
         '''

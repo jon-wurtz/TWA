@@ -44,14 +44,21 @@ def old_SU3_fabc():
     return f_abc
 
 def find_ICs(ICs):
-    out = zeros(8)*1j
-    M = old_SU3()
-    for i in range(8):
+    if len(ICs)==3:
+        out = zeros(8)*1j
+        M = old_SU3()
+    elif len(ICs)==4:
+        out = zeros(15)*1j
+        M = SU_4_basis()[0]
+    else:
+        raise 'SU !={3,4}'
+        
+    for i in range(len(out)):
         out[i] = dot(conj(ICs),dot(M[:,:,i],ICs))
         
-    var = zeros([8,8])*1j
-    for i in range(8):
-        for j in range(8):
+    var = zeros([len(out),len(out)])*1j
+    for i in range(len(out)):
+        for j in range(len(out)):
             var[i,j] = 0.5*dot(conj(ICs),dot(dot(M[:,:,i],M[:,:,j])+dot(M[:,:,j],M[:,:,i]),ICs))-out[i]*out[j]
             if abs(imag(var[i,j]))>1e-10:
                 raise 'Bad variance!'
@@ -178,10 +185,11 @@ def SU_4_basis(checkit=False):
     
     
 def ac(A,B):
+    '''
+    Anticommutator
+    '''
     return dot(A,B)+dot(B,A)
 
-    
-M = SU_4_basis(True)
     
     
     

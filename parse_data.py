@@ -9,17 +9,27 @@ Created on Fri Aug 26 13:34:22 2016
 import os
 from numpy import *
 
-filename = 'Mott_LONG2_IC_J=1.0.o57506-'
+
+filename = 'small_mottIC.o57511-'
 os.chdir('C:\Users\Jonathan Wurtz\Documents\Research\Scripts\SU3_dynamics\Outputs_0826')
 filed = os.listdir(os.getcwd())
 
 f = open(filename+'0')
 
+
+
 header = []
 for i in range(8):
     header.append(f.readline())
-
-dat = genfromtxt(f,comments='q')
+    
+ff = f.readline()
+datstring = ''
+while ff:
+    if 'D' not in ff and '[' not in ff:
+        datstring +=ff
+    ff = f.readline()
+    
+dat = genfromtxt(StringIO(datstring))
 f.close()
 n_tsteps = 1.0*dat.shape[0]/int(header[6])
 
@@ -36,8 +46,14 @@ for k in filed:
         f = open(k)
         for i in range(8):
             f.readline()
-            
-        dat_out += genfromtxt(f,comments='p').reshape(int(header[6]),n_tsteps,3).sum(0)/int(header[6])
+        
+        ff = f.readline()
+        datstring = ''
+        while ff:
+            if 'D' not in ff and '[' not in ff:
+                datstring +=ff+str('\n')
+            ff = f.readline()
+        dat_out += genfromtxt(StringIO(datstring)).reshape(int(header[6]),n_tsteps,3).sum(0)/int(header[6])
         kk+=1
 dat_out = dat_out/kk
 figure()
