@@ -13,7 +13,7 @@ from main import *
 if __name__=="__main__":
     
     # Step 1: Load stuff from the configuration file
-    config_file = sys.argv[2]
+    config_file = sys.argv[1]
     
     
     f = open(config_file)
@@ -59,11 +59,10 @@ if __name__=="__main__":
     
     
     # Step 2:Set up our smulation
-    if config_data['SU']=='3':
-        params = Hubbard_SU3(int(config_data['dim']),int(config_data['sies']),double(config_data['J']),double(config_data['U']))
-        params['verbose']='f'
-        params['obs']=observable('superfluid',int(double(config_data['T'])/double(config_data['tobs']))+1)
-    elif config_data['SU']=='4':
+    params = Hubbard_SU3(int(config_data['dim']),int(config_data['sies']),double(config_data['J']),double(config_data['U']))
+    params['verbose']='f'
+    params['obs']=observable('superfluid',int(double(config_data['T'])/double(config_data['tobs']))+1)
+
         
     di = doIT(params)
     
