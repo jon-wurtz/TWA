@@ -52,16 +52,19 @@ if __name__=="__main__":
     f = open(config_data['outfile'],'w')
     print >>f,'nparams:\t',len(config_data)
     for kkkk in config_data.keys():
-        print >>f,kkkk+"\t",config_data[kkkk]
+        print >>f,kkkk+":\t",config_data[kkkk]
     f.close()
     
     
     
     
     # Step 2:Set up our smulation
-    params = Hubbard_SU3(int(config_data['dim']),int(config_data['sies']),double(config_data['J']),double(config_data['U']))
-    params['verbose']='f'
-    params['obs']=observable('superfluid',int(double(config_data['T'])/double(config_data['tobs']))+1)
+    if config_data['SU']=='3':
+        params = Hubbard_SU3(int(config_data['dim']),int(config_data['sies']),double(config_data['J']),double(config_data['U']))
+        params['verbose']='f'
+        params['obs']=observable('superfluid',int(double(config_data['T'])/double(config_data['tobs']))+1)
+    elif config_data['SU']=='4':
+        
     di = doIT(params)
     
     
@@ -76,6 +79,7 @@ if __name__=="__main__":
         f = open(config_data['outfile'],'a')
         for j in range(len(di.obs.data)):
             print >>f,di.obs.T[j],di.obs.data[j]
+        print >>f,'--- End of Run ---'
         f.close()
         
         
