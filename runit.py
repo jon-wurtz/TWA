@@ -28,7 +28,7 @@ if __name__=="__main__":
         
         line = f.readline()
     f.close()
-    if linecount!=11:
+    if linecount<11:
         raise 'Incomplete Config File!'
         
         
