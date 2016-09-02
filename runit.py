@@ -59,7 +59,10 @@ if __name__=="__main__":
     
     
     # Step 2:Set up our smulation
-    params = Hubbard_SU3(int(config_data['dim']),int(config_data['sies']),double(config_data['J']),double(config_data['U']))
+    if 'SU' not in config_data:
+        params = Hubbard_SU3(int(config_data['dim']),int(config_data['sies']),double(config_data['J']),double(config_data['U']))
+    else:
+        params = Hubbard_SUN(int(config_data['dim']),int(config_data['sies']),double(config_data['J']),double(config_data['U']),int(config_data['SU']))
     params['verbose']='f'
     params['obs']=observable('superfluid',int(double(config_data['T'])/double(config_data['tobs']))+1)
 

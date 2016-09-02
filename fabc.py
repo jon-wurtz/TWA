@@ -8,7 +8,7 @@ from numpy import *
 # Defines the structure constants for SU(N) in the fundemental representation
 
 def old_SU3():
-    M = zeros([3,3,9])*1j
+    M = zeros([3,3,8])*1j
     M[:,:,0] = 2**-.5*array([[0,1,0],[1,0,1],[0,1,0]])
     M[:,:,1] = 1j*2**-.5*array([[0,-1,0],[1,0,-1],[0,1,0]])
     M[:,:,2] = array([[1,0,0],[0,0,0],[0,0,-1]])
@@ -17,7 +17,7 @@ def old_SU3():
     M[:,:,5] = 2**-.5*array([[0,-1,0],[-1,0,1],[0,1,0]])
     M[:,:,6] = 1j*2**-.5*array([[0,1,0],[-1,0,-1],[0,1,0]])
     M[:,:,7] = 3**-.5*array([[-1,0,0],[0,2,0],[0,0,-1]])
-    M[:,:,8] = array([[1,0,0],[0,1,0],[0,0,1]]) # Identity...
+    #M[:,:,8] = array([[1,0,0],[0,1,0],[0,0,1]]) # Identity...
     
     return M
 
@@ -182,7 +182,26 @@ def SU_4_basis(checkit=False):
     # f_abc is also here, which is a not-sparse-matrix.
     return M,fabc
     
+
+def to_SUbasis(matr):
+    if matr.shape[0]==4:
+        M = SU_4_basis()[0]
+    elif matr.shape[0]==3:
+        M = old_SU3()
+    else:
+        raise 'Bad matrix shape: N={3,4}'
     
+    out = zeros(M.shape[2])*1j
+    for i in range(M.shape[2]):
+        out[i] = 0.5*trace(dot(M[:,:,i],matr))
+    
+    out[abs(out)<1e-10]=0
+    return out
+        
+        
+        
+    
+        
     
 def ac(A,B):
     '''

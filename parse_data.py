@@ -62,14 +62,14 @@ def old_parse(filename):
     xlabel('Scaled Time tU')
     ylabel('Order Parameter')
 
-def new_parse(filename):
+def new_parse(filename,header_only=False):
     # Array number replaced with *
-    #filename = 'FILE{57528[*].buphyg.bu.edu}.dat'
+    #filename = 'FILE{57534[*].buphyg.bu.edu}.dat'
     os.chdir('C:\Users\Jonathan Wurtz\Documents\Research\Scripts\SU3_dynamics\Outputs_0826')
     filed = os.listdir(os.getcwd())
     touse = []
     # Find number of files of the same type...
-    for i in range(128): # Ug, lazy solution... what if you ahve more then 128 jobs?
+    for i in range(256): # Ug, lazy solution... what if you ahve more then 256 jobs?
         if filename.replace('*',str(i)) in filed and filename.replace('*',str(i)) not in touse:
             touse.append(filename.replace('*',str(i)))
         
@@ -82,33 +82,47 @@ def new_parse(filename):
         linesplit = line.split(':')
         config_data[linesplit[0].strip()]=linesplit[1].strip()
     
+    config_data['nfiles'] = len(touse)
+    if header_only:
+        for cd in config_data.keys():
+            print cd+':',config_data[cd]
+        return config_data
     # Now we know how many cycles there are!
     len_t = int(double(config_data['T'])/double(config_data['tobs']))+1
     dat_out = zeros([len_t,len(touse)*int(config_data['ncycles'])])
     T_out = zeros(len_t)
-    ind = 0
     
-    dat_temp0 = array(genfromtxt(f))
-    nc = 2*int(config_data['ncycles'])
-    dat_temp = dat_temp0.transpose().reshape(nc,len_t) #ugh.
-    ind = 0
-    for ll in range(dat_temp.shape[0]/2):
-        dat_out[:,ll] = dat_temp[ll+2,:].transpose()
+
     
-    T_out = dat_temp[0,:]
+    lines = f.readlines()
     f.close()
+    for i in range(int(config_data['ncycles'])):
+        for k in range(len_t):
+            lsplit = lines[k+i*(len_t+1)].split()
+            dat_out[k,i] = double(lsplit[1])
+            if i==0:
+                T_out[k] = double(lsplit[0])
+    
+    # Now do all the other data files...
+    ind = 0
+    nc = int(config_data['ncycles'])
     for touse_ in touse[1::]:
-        ind+=1
+        ind +=1
         f = open(touse_)
+        # Clear away the config files...
         for i in range(nlines+1):
             f.readline()
-        dat_temp0 = array(genfromtxt(f))
-        dat_temp = dat_temp0.transpose().reshape(nc,len_t) #ugh.
         
-        for ll in range(dat_temp.shape[0]/2):
-            dat_out[:,ll+nc/2*ind] = dat_temp[ll+2,:].transpose()
-        
+        lines = f.readlines()
         f.close()
+        for i in range(nc):
+            for k in range(len_t):
+                lsplit = lines[k+i*(len_t+1)].split()
+                dat_out[k,i+ind*nc] = double(lsplit[1])
+        
+    
+    
+    
     
     plot(T_out,average(dat_out,axis=1),'b',linewidth=2)
     plot(T_out,average(dat_out,axis=1)+std(dat_out,axis=1)/sqrt(dat_out.shape[1]),'r--',linewidth=1)

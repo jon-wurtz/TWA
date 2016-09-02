@@ -51,7 +51,7 @@ class doIT():
             
         self.params = params
         
-    def product_IC(self,psi):
+    def product_IC(self,psi,novariance=False):
         '''
         Creates a product state IC, where psi is either a vector eg for SU(3):
            a|+> + b|0> + c|-> goes to [['z',0,a],['z',1,b],['z',2,c]]
@@ -71,7 +71,10 @@ class doIT():
         # Find the ICs in the SU(N) basis
         T_init = find_ICs(psi2)
         #print 'Determinant of Covariance:',linalg.det(T_init[1])
-        self.data = random.multivariate_normal(T_init[0],T_init[1],size=self.data.shape[0:-1])
+        if novariance:
+            self.data = random.multivariate_normal(T_init[0],0*T_init[1],size=self.data.shape[0:-1])
+        else:
+            self.data = random.multivariate_normal(T_init[0],T_init[1],size=self.data.shape[0:-1])
 
 
 
@@ -199,7 +202,7 @@ def Hubbard_SU3(dim,sies,J,U):
 
 def local_Hubbard_SU4():
     '''
-    a nonlinear model H = n(n-1) + (a_+) + (a_-) in SU(4) representation
+    a nonlinear model H = n(n-2) + (a_+) + (a_-) in SU(4) representation
     '''
     output = {}
     output['SU'] = 4
@@ -220,9 +223,70 @@ def local_Hubbard_SU4():
     output['terms'] = terms
     return output
 
+def Hubbard_SUN(dim,sies,J,U,N):
+    '''
+    Paramaters for a SU(N) Bose-Hubbard model.
+    here, we use the matrices for boson raising and lowering operators,
+     and NOT those for spin raising and lowering.
+    
+    dim - dimension: in {1,2,3}
+    sies - size of lattice. Please, <30?
+    J - Coupling strength. Should be (-)
+    U - Interaction strenth. Should be (+)
+    N - SU(*). in {3,4}
+    
+    Note that the zeroth element of the wavefunc'n is
+     the fully occupied mode, and the last element is the unoccupied one.
+    
+    '''
+    
+    
+    output = {}
+    if N=='old':
+        output['SU'] = 3
+    else:
+        output['SU'] = N
+    output['dim'] = [dim,sies]
+    output['obs'] = observable('superfluid',10000)
+    output['verbose']='f'
+    
+    terms = []
+    
+    # Define matrices...
+    if N==4:
+        matr_a = diag([sqrt(3),sqrt(2),1],k=1) # the a+ operator
+        matr_U = diag([3,0,-1,0]) # U*n(n-2)
+    elif N==3:
+        matr_a = diag([sqrt(2),1],k=1) # the a+ operator
+        matr_U = diag([0,-1,0]) # U*n(n-2)
+    elif N=='old':
+        matr_a = diag([1,1],k=1) # the a+ operator
+        matr_U = diag([0,-0.5,0]) # U*n(n-2)
+    else:        
+        raise 'Bad SU(N)! N={3,4}'
+    
+    # Define nonlocal interactions
+    UU = to_SUbasis(matr_a)
+    VV = to_SUbasis(matr_a.transpose())
+    UV = real(outer(UU,VV) + outer(VV,UU)) # Assert: it is real.
+    
+    neighbors = list(identity(dim).astype(int32)) # Define nearest-neighbor interaction
+    
+    for neighbor in neighbors:
+        for UV_ in list(array(nonzero(UV)).transpose()): # I'm an abomination
+            terms.append([[int(UV_[0]),J*UV[UV_[0],UV_[1]]],[int(UV_[1]),neighbor]])
+    
+    # Define local interactions...
+    Q = real(to_SUbasis(matr_U)) # Assert: it is real.
+    for Q_ in list(array(nonzero(Q)).transpose()):
+        terms.append([ [int(Q_[0]), U*Q[Q_[0]]] ])
+    
+    output['terms'] = terms
+    return output
+    
 
 # Dimension, Size, n_iterations, IC, T,nsteps,nobs
-if __name__=="__main__":
+if __name__=="__main___":
     if len(sys.argv)==1: # Run one batch with whatever settings
         params = Hubbard_SU3(2,2,-0.5,1)
         params['verbose']='f'
