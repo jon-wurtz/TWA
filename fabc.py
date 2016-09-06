@@ -8,6 +8,9 @@ from numpy import *
 # Defines the structure constants for SU(N) in the fundemental representation
 
 def old_SU3():
+    '''
+    Basis matrices for SU(3)
+    '''
     M = zeros([3,3,8])*1j
     M[:,:,0] = 2**-.5*array([[0,1,0],[1,0,1],[0,1,0]])
     M[:,:,1] = 1j*2**-.5*array([[0,-1,0],[1,0,-1],[0,1,0]])
@@ -22,6 +25,9 @@ def old_SU3():
     return M
 
 def old_SU3_fabc():
+    '''
+    Structure functions for SU(3)
+    '''
     f_abc = []
     # Non-zero structure constants...
     f_gen = []
@@ -44,6 +50,15 @@ def old_SU3_fabc():
     return f_abc
 
 def find_ICs(ICs):
+    '''
+    ICs is a vector of length 3 or 4, are the normalized
+    variables in the wavefunction.
+    It returns a vector and matrix, where the vector is the center
+    of a gaussian distribution in the Weyl-transformed SU(N) generator
+    phase space coordinates, and the matrix is the covarience of
+    a gaussian distribution, or equivilently the correlations and
+    fluctuations between variables.
+    '''
     if len(ICs)==3:
         out = zeros(8)*1j
         M = old_SU3()
@@ -184,6 +199,10 @@ def SU_4_basis(checkit=False):
     
 
 def to_SUbasis(matr):
+    '''
+    Converts a square 3x3 or 4x4 matrix into its equivilent
+    vector of SU(N) operators.
+    '''
     if matr.shape[0]==4:
         M = SU_4_basis()[0]
     elif matr.shape[0]==3:

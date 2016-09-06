@@ -234,6 +234,9 @@ def Hubbard_SUN(dim,sies,J,U,N):
     J - Coupling strength. Should be (-)
     U - Interaction strenth. Should be (+)
     N - SU(*). in {3,4}
+        - Can also be:
+          - "old" - SU(3) rep of Spin operators, not bosons
+          - "SU3" - SU3 Hamiltonian embedded in SU4 (w/ bosons)
     
     Note that the zeroth element of the wavefunc'n is
      the fully occupied mode, and the last element is the unoccupied one.
@@ -244,6 +247,8 @@ def Hubbard_SUN(dim,sies,J,U,N):
     output = {}
     if N=='old':
         output['SU'] = 3
+    elif N=='SU3':
+        output['SU'] = 4
     else:
         output['SU'] = N
     output['dim'] = [dim,sies]
@@ -262,6 +267,9 @@ def Hubbard_SUN(dim,sies,J,U,N):
     elif N=='old':
         matr_a = diag([1,1],k=1) # the a+ operator
         matr_U = diag([0,-0.5,0]) # U*n(n-2)
+    elif N=='SU3': # Use SU4 generators but SU3 Hamiltonian
+        matr_a = diag([0,sqrt(2),1],k=1) # the a+ operator but with no 4th element.
+        matr_U = diag([3,0,-1,0]) # U*n(n-2)
     else:        
         raise 'Bad SU(N)! N={3,4}'
     

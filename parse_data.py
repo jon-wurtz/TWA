@@ -96,12 +96,15 @@ def new_parse(filename,header_only=False):
     
     lines = f.readlines()
     f.close()
-    for i in range(int(config_data['ncycles'])):
+    kkk = 0
+    for i in range(int(len(lines)/len_t)):
         for k in range(len_t):
             lsplit = lines[k+i*(len_t+1)].split()
-            dat_out[k,i] = double(lsplit[1])
+            dat_out[k,kkk] = double(lsplit[1])
             if i==0:
                 T_out[k] = double(lsplit[0])
+        
+        kkk+=1
     
     # Now do all the other data files...
     ind = 0
@@ -115,14 +118,15 @@ def new_parse(filename,header_only=False):
         
         lines = f.readlines()
         f.close()
-        for i in range(nc):
+        for i in range(int(len(lines)/len_t)):
             for k in range(len_t):
                 lsplit = lines[k+i*(len_t+1)].split()
-                dat_out[k,i+ind*nc] = double(lsplit[1])
+                dat_out[k,kkk] = double(lsplit[1])
+            kkk+=1
         
+    dat_out = dat_out[:,0:kkk]
     
-    
-    
+    config_data['num_runs']=kkk
     
     plot(T_out,average(dat_out,axis=1),'b',linewidth=2)
     plot(T_out,average(dat_out,axis=1)+std(dat_out,axis=1)/sqrt(dat_out.shape[1]),'r--',linewidth=1)
