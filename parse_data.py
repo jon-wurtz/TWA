@@ -128,9 +128,10 @@ def new_parse(filename,header_only=False):
     
     config_data['num_runs']=kkk
     
-    plot(T_out,average(dat_out,axis=1),'b',linewidth=2)
-    plot(T_out,average(dat_out,axis=1)+std(dat_out,axis=1)/sqrt(dat_out.shape[1]),'r--',linewidth=1)
-    plot(T_out,average(dat_out,axis=1)-std(dat_out,axis=1)/sqrt(dat_out.shape[1]),'r--',linewidth=1)
+    T_out = linspace(0,double(config_data['T']),len_t)
+    plot(T_out,dat_out.sum(axis=1)/kkk,'b',linewidth=2)
+    plot(T_out,dat_out.sum(axis=1)/kkk+std(dat_out,axis=1)/sqrt(kkk),'r--',linewidth=1)
+    plot(T_out,dat_out.sum(axis=1)/kkk-std(dat_out,axis=1)/sqrt(kkk),'r--',linewidth=1)
     xlabel('Scale Time')
     ylabel('Order Parameter')
     return T_out,dat_out,config_data

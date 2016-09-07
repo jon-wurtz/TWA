@@ -8,6 +8,7 @@ from hamiltonian import *
 from fabc import *
 from numpy import *
 import sys
+#from numba import jit
 
 class doIT():
     def __init__(self,params):
@@ -266,12 +267,12 @@ def Hubbard_SUN(dim,sies,J,U,N):
         matr_U = diag([0,-1,0]) # U*n(n-2)
     elif N=='old':
         matr_a = diag([1,1],k=1) # the a+ operator
-        matr_U = diag([0,-0.5,0]) # U*n(n-2)
+        matr_U = diag([0,-1,0]) # U*n(n-2)
     elif N=='SU3': # Use SU4 generators but SU3 Hamiltonian
         matr_a = diag([0,sqrt(2),1],k=1) # the a+ operator but with no 4th element.
-        matr_U = diag([3,0,-1,0]) # U*n(n-2)
+        matr_U = diag([0,0,-1,0]) # U*n(n-2)
     else:        
-        raise 'Bad SU(N)! N={3,4}'
+        raise 'Bad SU(N)! N={3,4,old,SU3}'
     
     # Define nonlocal interactions
     UU = to_SUbasis(matr_a)
@@ -287,7 +288,7 @@ def Hubbard_SUN(dim,sies,J,U,N):
     # Define local interactions...
     Q = real(to_SUbasis(matr_U)) # Assert: it is real.
     for Q_ in list(array(nonzero(Q)).transpose()):
-        terms.append([ [int(Q_[0]), U*Q[Q_[0]]] ])
+        terms.append([ [int(Q_[0]), U*0.5*Q[Q_[0]]] ])
     
     output['terms'] = terms
     return output
@@ -295,6 +296,7 @@ def Hubbard_SUN(dim,sies,J,U,N):
 
 # Dimension, Size, n_iterations, IC, T,nsteps,nobs
 if __name__=="__main___":
+    raise 'Outdated!'
     if len(sys.argv)==1: # Run one batch with whatever settings
         params = Hubbard_SU3(2,2,-0.5,1)
         params['verbose']='f'

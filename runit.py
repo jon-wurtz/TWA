@@ -63,9 +63,9 @@ if __name__=="__main__":
         params = Hubbard_SU3(int(config_data['dim']),int(config_data['sies']),double(config_data['J']),double(config_data['U']))
     else:
         if config_data['SU'].isdigit():
-            params = Hubbard_SUN(int(config_data['dim']),int(config_data['sies']),double(config_data['J'])*sqrt(0.5),double(config_data['U'])*0.5,int(config_data['SU']))
+            params = Hubbard_SUN(int(config_data['dim']),int(config_data['sies']),double(config_data['J']),double(config_data['U']),int(config_data['SU']))
         else:
-            params = Hubbard_SUN(int(config_data['dim']),int(config_data['sies']),double(config_data['J'])*sqrt(0.5),double(config_data['U'])*0.5,config_data['SU'])
+            params = Hubbard_SUN(int(config_data['dim']),int(config_data['sies']),double(config_data['J']),double(config_data['U']),config_data['SU'])
     params['verbose']='f'
     params['obs']=observable('superfluid',int(double(config_data['T'])/double(config_data['tobs']))+1)
 
