@@ -112,6 +112,7 @@ class observable():
          super: Superfluid density, from Bose-Hubbard model
          casmir: the Casmir operator sum(X**2)
          Sz: the Sz observable...
+         num_particles: The number of particles per state
         '''
         self.mask = mask
         self.saveit = num_samples>0
@@ -121,6 +122,10 @@ class observable():
             self.index = 0
             if mask=='casmir':
                 self.data = zeros([50,50,num_samples])
+            if mask=='num_particles':
+                self.data = zeros([num_samples,4])
+                self.SU4 = [to_SUbasis(diag([1,0,0,0])),to_SUbasis(diag([0,1,0,0])),to_SUbasis(diag([0,0,1,0])),to_SUbasis(diag([0,0,0,1]))]
+                self.SU3 = [to_SUbasis(diag([1,0,0])),to_SUbasis(diag([0,1,0])),to_SUbasis(diag([0,0,1]))]
     
     def reset(self):
         if self.saveit>0:
@@ -160,12 +165,30 @@ class observable():
                 self.T[self.index]=T
                 self.index+=1
             return sum(sum(sum(data**2,2)))
+        
+        if self.mask=='num_particles':
+            if self.saveit:
+                for i in range(int(sqrt(data.shape[2]+1))):
+                    mm = zeros(int(sqrt(data.shape[2]+1)))
+                    mm[i] = 1
+                    self.data[self.index,i] = average(average(dot(data,to_SUbasis(diag(mm)))))
+                    self.T[self.index]=T
+                self.index+=1
+            return None
+
+                
     
     def plot(self):
         if self.mask=='casmir':
             plot(self.T[0:self.index],sum(sum(sum(self.data[:,:,0:self.index]))))
         plot(self.T[0:self.index],real(self.data[0:self.index]))
 
+    def put(self,filename):
+        f = open(filename,'a')
+        for j in range(len(self.data)):
+            print >>f,self.T[j],self.data[j].tostring()
+        print >>f,'--- End of Run ---'
+        f.close()
 
 
 def Hubbard_SU3(dim,sies,J,U):
@@ -292,58 +315,5 @@ def Hubbard_SUN(dim,sies,J,U,N):
     
     output['terms'] = terms
     return output
-    
 
-# Dimension, Size, n_iterations, IC, T,nsteps,nobs
-if __name__=="__main___":
-    raise 'Outdated!'
-    if len(sys.argv)==1: # Run one batch with whatever settings
-        params = Hubbard_SU3(2,2,-0.5,1)
-        params['verbose']='f'
-        di =doIT(params)
-        
-        T = 20.
-        tstep = 0.001
-        print 'Nsteps:', T/tstep
-        n_samples = 1000
-        bulkdata = zeros(2000)
-        for i in range(10):
-            print i
-            di.obs.reset()
-            di.product_IC([['z',1,1]])
-            di.run(T,tstep,T/n_samples)
-            bulkdata += di.obs.data
-        di.obs.plot()
-        #di.obs.data[0:di.obs.index].tofile('out.dat')
-        #bulkdat[0:di.obs.index] += di.obs.data[0:di.obs.index]
-    else:
-        #bulkdat = zeros(2000)
-        params0 = Hubbard_SU3(int(sys.argv[1]),int(sys.argv[2]),-1,1)
-            
-        print 'Bose-Hubbard Model: J, U, dim, n terms,IC,n points, Tstep'
-        print -params0['terms'][0][0][1]
-        print params0['terms'][-1][0][1]*(-6/sqrt(3))
-        print params0['dim'][0]
-        print params0['dim'][1]
-        print sys.argv[4]
-        print int(sys.argv[3])
-        print double(sys.argv[5])/double(sys.argv[6])
-        
-        for i in range(int(sys.argv[3])):
-            di = doIT(params0)
-            if sys.argv[4]=='mott':
-                di.product_IC([['x',0,1]])
-            elif sys.argv[4]=='super':
-                di.product_IC([['z',0,1]])
-            dt = double(sys.argv[5])/double(sys.argv[6])
-            dtobs = double(sys.argv[5])/double(sys.argv[7])
-            di.run(double(sys.argv[5]),dt,dtobs)
-            #bulkdat[0:di.obs.index] += di.obs.data[0:di.obs.index]
-        '''
-        if len(sys.argv)==9:
-            f = open(sys.argv[8],'w')
-            for i in range(di.obs.index-1):
-                print >>f,di.obs.T[i],str('\t'),bulkdat[i]/(i+1)
-            f.close()
-        '''
         

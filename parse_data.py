@@ -87,12 +87,25 @@ def new_parse(filename,header_only=False):
         for cd in config_data.keys():
             print cd+':',config_data[cd]
         return config_data
-    # Now we know how many cycles there are!
-    len_t = int(double(config_data['T'])/double(config_data['tobs']))+1
-    dat_out = zeros([len_t,len(touse)*int(config_data['ncycles'])])
-    T_out = zeros(len_t)
+    
     
 
+    
+    line = f.readline()
+    lsplit = f.readline().split()
+    try:
+        dat_line =  fromstring(lsplit[1])
+        isbinary=True
+    except:
+        isbinary=False
+        dat_line = double(lsplit[1])
+    
+    # Now we know how many cycles and the shape of the data!
+    len_t = int(double(config_data['T'])/double(config_data['tobs']))+1
+    dat_out = zeros([len_t,len(touse)*int(config_data['ncycles']),len(dat_line)])
+    T_out = zeros(len_t)
+    
+    dat_out[0,0,:] = dat_line
     
     lines = f.readlines()
     f.close()
@@ -100,7 +113,11 @@ def new_parse(filename,header_only=False):
     for i in range(int(len(lines)/len_t)):
         for k in range(len_t):
             lsplit = lines[k+i*(len_t+1)].split()
-            dat_out[k,kkk] = double(lsplit[1])
+            if isbinary
+                dat_out[k+1,kkk,:] = fromstring(lsplit[1])
+                else:
+                    dat_out[k+1,kkk] = double(lsplit[1])
+                    
             if i==0:
                 T_out[k] = double(lsplit[0])
         
@@ -121,7 +138,11 @@ def new_parse(filename,header_only=False):
         for i in range(int(len(lines)/len_t)):
             for k in range(len_t):
                 lsplit = lines[k+i*(len_t+1)].split()
-                dat_out[k,kkk] = double(lsplit[1])
+                if isbinary
+                dat_out[k,kkk] = fromstring(lsplit[1])
+                else:
+                    dat_out[k,kkk] = double(lsplit[1])
+                    
             kkk+=1
         
     dat_out = dat_out[:,0:kkk]
