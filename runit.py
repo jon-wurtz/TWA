@@ -53,8 +53,6 @@ if __name__=="__main__":
     print >>f,'nparams:\t',len(config_data)
     for kkkk in config_data.keys():
         print >>f,kkkk+":\t",config_data[kkkk]
-    
-    print >>f,str('isbinary:\tt')
     f.close()
     
     
@@ -69,7 +67,7 @@ if __name__=="__main__":
         else:
             params = Hubbard_SUN(int(config_data['dim']),int(config_data['sies']),double(config_data['J']),double(config_data['U']),config_data['SU'])
     params['verbose']='f'
-    params['obs']=observable('num_particles',int(double(config_data['T'])/double(config_data['tobs']))+1)
+    params['obs']=observable('super',int(double(config_data['T'])/double(config_data['tobs']))+1)
 
         
     di = doIT(params)

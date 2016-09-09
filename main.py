@@ -185,9 +185,8 @@ class observable():
 
     def put(self,filename):
         f = open(filename,'a')
-        for j in range(len(self.data)):
-            print >>f,self.T[j],self.data[j].tostring()
-        print >>f,'--- End of Run ---'
+        print >>f,'---DATA---'
+        print >>f,self.data.tostring()
         f.close()
 
 
