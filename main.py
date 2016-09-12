@@ -286,9 +286,9 @@ def Hubbard_SUN(dim,sies,J,U,N):
         matr_U = diag([3,0,-1,0]) # U*n(n-2)
     elif N==3:
         matr_a = diag([sqrt(2),1],k=1) # the a+ operator
-        matr_U = diag([0,-1,0]) # U*n(n-2)
+        matr_U = diag([0,-1,0]) # U*n(n-1)
     elif N=='old':
-        matr_a = diag([1,1],k=1) # the a+ operator
+        matr_a = diag([sqrt(2),sqrt(2)],k=1) # the S+ operator
         matr_U = diag([0,-1,0]) # U*n(n-2)
     elif N=='SU3': # Use SU4 generators but SU3 Hamiltonian
         matr_a = diag([0,sqrt(2),1],k=1) # the a+ operator but with no 4th element.

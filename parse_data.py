@@ -91,35 +91,20 @@ def new_parse(filename,header_only=False):
     
 
     
-    lines = f.readlines()
-    print lines[0]
-    lsplit = lines[0].split()
-    try:
-        dat_line =  fromstring(lsplit[1])
-        isbinary=True
-    except:
-        isbinary=False
-        dat_line = array([double(lsplit[1])])
-    
-    print isbinary
     # Now we know how many cycles and the shape of the data!
     len_t = int(double(config_data['T'])/double(config_data['tobs']))+1
-    dat_out = zeros([len_t,len(touse)*int(config_data['ncycles']),dat_line.shape[0]])
+    dat_out = zeros([len_t,len(touse)*int(config_data['ncycles'])])
     T_out = zeros(len_t)
     
     #dat_out[0,0,:] = dat_line
     
-    #lines = f.readlines()
+    lines = f.readlines()
     f.close()
     kkk = 0
     for i in range(int(len(lines)/len_t)):
         for k in range(len_t):
             lsplit = lines[k+i*(len_t+1)].split()
-            if isbinary:
-                dat_out[k,kkk,:] = fromstring(lsplit[1])
-            else:
-                
-                dat_out[k,kkk] = double(lsplit[1])               
+            dat_out[k,kkk] = double(lsplit[1])               
                     
             if i==0:
                 T_out[k] = double(lsplit[0])
@@ -141,10 +126,7 @@ def new_parse(filename,header_only=False):
         for i in range(int(len(lines)/len_t)):
             for k in range(len_t):
                 lsplit = lines[k+i*(len_t+1)].split()
-                if isbinary:
-                    dat_out[k,kkk] = fromstring(lsplit[1])
-                else:
-                    dat_out[k,kkk] = double(lsplit[1])
+                dat_out[k,kkk] = double(lsplit[1])
                     
             kkk+=1
         
@@ -183,20 +165,29 @@ def new_parse2(filename,header_only=False):
     for dats in data[1::]:
         dat_out_list.append(fromstring(dats[1:-1]))
     
+    f.close()
+    
+    for touse_ in touse[1::]:
+        f = open(touse_,'rb')
+        data = f.read().replace('\r\n','\n').split('---DATA---')
+        for dats in data[1::]:
+            dat_out_list.append(fromstring(dats[1:-1]))
+    
     dat_out_arr = array(dat_out_list)
     
     num_obs = int(double(config_data['T'])/double(config_data['tobs']))+1
     TT = linspace(0,double(config_data['T']),num_obs)
+    '''
     if len(dat_out_list[0])==num_obs: #1d data
         plot(TT,average(dat_out_arr),'b',linewidth=2)
         plot(TT,average(dat_out_arr)+std(dat_out_arr)/sqrt(len(dat_out_list)),'r--')
         plot(TT,average(dat_out_arr)-std(dat_out_arr)/sqrt(len(dat_out_list)),'r--')
     elif int(sqrt(len(dat_out_list[0])))==num_obs: #2d data
         pass
+    '''
     
         
     return dat_out_arr,TT,config_data
-    
 '''
 
 #return dat_temp    
