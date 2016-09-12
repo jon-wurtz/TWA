@@ -153,20 +153,20 @@ class observable():
                 self.index+=1
             return X1**2 + X2**2 - XX
         
-        if self.mask=='Sz':
+        elif self.mask=='Sz':
             if self.saveit:
                 self.data[self.index]=average(data[:,:,2])
                 self.T[self.index]=T
                 self.index+=1
             return average(data[:,:,2])
-        if self.mask=='casmir':
+        elif self.mask=='casmir':
             if self.saveit:
                 self.data[0:data.shape[0],0:data.shape[1],self.index] = sum(data**2,2)
                 self.T[self.index]=T
                 self.index+=1
             return sum(sum(sum(data**2,2)))
         
-        if self.mask=='num_particles':
+        elif self.mask=='num_particles':
             if self.saveit:
                 for i in range(int(sqrt(data.shape[2]+1))):
                     mm = zeros(int(sqrt(data.shape[2]+1)))
@@ -175,6 +175,21 @@ class observable():
                     self.T[self.index]=T
                 self.index+=1
             return None
+        
+        elif self.mask=='Sz2':
+            if self.saveit:
+                if data.shape[2]==8:
+                    self.data[self.index]=average(data[:,:,7])*(-0.57735027)+2/3.
+                    self.T[self.index]=T
+                    self.index+=1
+                    return average(data[:,:,7])*(-0.57735027)+2/3.
+                elif data.shape[2]==15:
+                    self.data[self.index]=average(data[:,:,7])*sqrt(2)
+                    self.T[self.index]=T
+                    self.index+=1
+                    return average(data[:,:,7])*sqrt(2)
+        else:
+            raise 'Bad mask'
 
                 
     
@@ -246,7 +261,7 @@ def local_Hubbard_SU4():
     output['terms'] = terms
     return output
 
-def Hubbard_SUN(dim,sies,J,U,N):
+def Hubbard_SUN(dim,sies,J,U,N,meanfield=False):
     '''
     Paramaters for a SU(N) Bose-Hubbard model.
     here, we use the matrices for boson raising and lowering operators,
@@ -301,8 +316,18 @@ def Hubbard_SUN(dim,sies,J,U,N):
     VV = to_SUbasis(matr_a.transpose())
     UV = real(outer(UU,VV) + outer(VV,UU)) # Assert: it is real.
     
-    neighbors = list(identity(dim).astype(int32)) # Define nearest-neighbor interaction
     
+    neighbors = list(identity(dim).astype(int32)) # Define nearest-neighbor interaction
+   
+    if meanfield:
+        print 'Doing it with Mean Field!!'
+        # Mean-Field!
+        J =  0.25*J/(sies**dim-1) # Everything is quadruple-counted; once by inversion symmetry and once by i<->j
+        if dim==2:
+            neighbors = list(array((meshgrid(range(sies),range(sies)))).reshape(2,sies**2).transpose())[1:-1]
+        elif dim==3:
+            neighbors = list(array((meshgrid(range(sies),range(sies),range(sies)))).reshape(2,sies**3).transpose())[1:-1]
+        
     for neighbor in neighbors:
         for UV_ in list(array(nonzero(UV)).transpose()): # I'm an abomination
             terms.append([[int(UV_[0]),J*UV[UV_[0],UV_[1]]],[int(UV_[1]),neighbor]])

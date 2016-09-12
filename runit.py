@@ -13,7 +13,7 @@ from main import *
 if __name__=="__main__":
     
     # Step 1: Load stuff from the configuration file
-    config_file = sys.argv[1]
+    config_file = 'config.conf'#sys.argv[1]
     
     
     f = open(config_file)
@@ -59,15 +59,28 @@ if __name__=="__main__":
     
     
     # Step 2:Set up our smulation
+    
+    # Check for Mean-Field condition...
+    if 'meanfield' in config_data:
+        domeanfield = (config_data['meanfield']=='t')
+    else:
+        domeanfield = False
+    
+    if 'obs' in config_data:
+        obs_var = config_data['obs']
+    else:
+        obs_var = 'superfluid'
+    
+    
     if 'SU' not in config_data:
         params = Hubbard_SU3(int(config_data['dim']),int(config_data['sies']),double(config_data['J']),double(config_data['U']))
     else:
         if config_data['SU'].isdigit():
-            params = Hubbard_SUN(int(config_data['dim']),int(config_data['sies']),double(config_data['J']),double(config_data['U']),int(config_data['SU']))
+            params = Hubbard_SUN(int(config_data['dim']),int(config_data['sies']),double(config_data['J']),double(config_data['U']),int(config_data['SU']),domeanfield)
         else:
-            params = Hubbard_SUN(int(config_data['dim']),int(config_data['sies']),double(config_data['J']),double(config_data['U']),config_data['SU'])
+            params = Hubbard_SUN(int(config_data['dim']),int(config_data['sies']),double(config_data['J']),double(config_data['U']),config_data['SU'],domeanfield)
     params['verbose']='f'
-    params['obs']=observable('super',int(double(config_data['T'])/double(config_data['tobs']))+1)
+    params['obs']=observable(obs_var,int(double(config_data['T'])/double(config_data['tobs']))+1)
 
         
     di = doIT(params)

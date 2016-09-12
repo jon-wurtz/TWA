@@ -168,23 +168,30 @@ def new_parse2(filename,header_only=False):
     f.close()
     
     for touse_ in touse[1::]:
+        print touse_
         f = open(touse_,'rb')
         data = f.read().replace('\r\n','\n').split('---DATA---')
         for dats in data[1::]:
-            dat_out_list.append(fromstring(dats[1:-1]))
+            try:
+                dat_out_list.append(fromstring(dats[1:-1]))
+            except:
+                pass
     
     dat_out_arr = array(dat_out_list)
+    config_data['nruns'] = len(dat_out_list)
     
     num_obs = int(double(config_data['T'])/double(config_data['tobs']))+1
     TT = linspace(0,double(config_data['T']),num_obs)
-    '''
+    
     if len(dat_out_list[0])==num_obs: #1d data
-        plot(TT,average(dat_out_arr),'b',linewidth=2)
-        plot(TT,average(dat_out_arr)+std(dat_out_arr)/sqrt(len(dat_out_list)),'r--')
-        plot(TT,average(dat_out_arr)-std(dat_out_arr)/sqrt(len(dat_out_list)),'r--')
+        print average(dat_out_arr,0).shape
+        print TT.shape
+        plot(TT,average(dat_out_arr,0),'b',linewidth=2)
+        plot(TT,average(dat_out_arr,0)+std(dat_out_arr,0)/sqrt(len(dat_out_list)),'r--')
+        plot(TT,average(dat_out_arr,0)-std(dat_out_arr,0)/sqrt(len(dat_out_list)),'r--')
     elif int(sqrt(len(dat_out_list[0])))==num_obs: #2d data
         pass
-    '''
+    
     
         
     return dat_out_arr,TT,config_data
