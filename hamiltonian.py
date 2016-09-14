@@ -63,7 +63,8 @@ class hamiltonian():
         '''
         dH = zeros(data.shape[0:-1])
         for term in self.terms[ind]:
-            if not term[1]:
+            if term[1]==None: # THIS WAS THE DAMNED BUG THAT VEXED ME FOR 2 WEEKS
+                # IT USED TO BE if term[1]: but {0,None,False} are equivilent...
                 dH +=term[0]
             else:
                 #print data

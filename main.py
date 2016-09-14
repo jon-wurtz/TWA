@@ -136,6 +136,7 @@ class observable():
                 self.data = zeros([50,50,num_samples])
     def get(self,data,T):
         if self.mask=='superfluid':
+            
             if len(data.shape)==3:
                 X1 = average(data[:,:,0])
                 X2 = average(data[:,:,1])
@@ -146,12 +147,20 @@ class observable():
                 XX = average(data[:,:,:,0]**2 + data[:,:,:,1]**2)/(data.shape[0]*data.shape[1]*data.shape[2])
             else:
                 raise 'Something went Wrong!'
-                
+            
+            # SU(4) vs SU(3) has a different 
+            mod = 0           
+            if data.shape[-1]==8:
+                mod=1
+            elif data.shape[-1]==15:
+                mod=2.5
+            else:
+                raise 'BAD!'
             if self.saveit:
-                self.data[self.index]=X1**2 + X2**2 - XX
+                self.data[self.index]=(X1**2 + X2**2 - XX)*mod
                 self.T[self.index]=T
                 self.index+=1
-            return X1**2 + X2**2 - XX
+            return (X1**2 + X2**2 - XX)*mod
         
         elif self.mask=='Sz':
             if self.saveit:

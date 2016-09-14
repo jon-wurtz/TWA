@@ -163,12 +163,15 @@ def new_parse2(filename,header_only=False):
     
     dat_out_list = []
     for dats in data[1::]:
-        dat_out_list.append(fromstring(dats[1:-1]))
+        try:    
+            dat_out_list.append(fromstring(dats[1:-1]))
+        except:
+            pass
     
     f.close()
     
     for touse_ in touse[1::]:
-        print touse_
+        #print touse_
         f = open(touse_,'rb')
         data = f.read().replace('\r\n','\n').split('---DATA---')
         for dats in data[1::]:
@@ -184,8 +187,8 @@ def new_parse2(filename,header_only=False):
     TT = linspace(0,double(config_data['T']),num_obs)
     
     if len(dat_out_list[0])==num_obs: #1d data
-        print average(dat_out_arr,0).shape
-        print TT.shape
+        #print average(dat_out_arr,0).shape
+        #print TT.shape
         plot(TT,average(dat_out_arr,0),'b',linewidth=2)
         plot(TT,average(dat_out_arr,0)+std(dat_out_arr,0)/sqrt(len(dat_out_list)),'r--')
         plot(TT,average(dat_out_arr,0)-std(dat_out_arr,0)/sqrt(len(dat_out_list)),'r--')
