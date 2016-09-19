@@ -59,24 +59,51 @@ class doIT():
            where 'z' and the second number denote the basis vector.           
         '''
         
-        # Convert ICs to the Z-basis
-        wm = {'x':0,'y':1,'z':2}
-        psi2 = zeros(self.params['SU'])*1j
-        for x in psi:
-            psi2 += x[2]*linalg.eig(self.basis[:,:,wm[x[0]]])[1][:,x[1]]
+        if type(psi)==ndarray:
+            if (psi.shape!=self.data.shape[0:-1]):
+                raise 'Incorrect Shape!'
+                
+            sies = psi.shape[0]
+            if self.dim==2:
+                itrs = list(array(meshgrid(range(sies),range(sies))).reshape(2,sies**2).transpose())
+            elif self.dim==3:
+                itrs = list(array(meshgrid(range(sies),range(sies),range(sies))).reshape(3,sies**3).transpose())
+            for element in itrs:
+                wm = {'x':0,'y':1,'z':2}
+                psi2 = zeros(self.params['SU'])*1j
+                for x in psi[tuple(element)]:
+                    psi2 += x[2]*linalg.eig(self.basis[:,:,wm[x[0]]])[1][:,x[1]]
+                
+                # Renormalize to 1...
+                psi2 = psi2*(dot(psi2,conj(psi2))**-.5)
+                #print psi2
+                
+                # Find the ICs in the SU(N) basis
+                T_init = find_ICs(psi2)
+                if novariance:
+                    self.data[tuple(element)] = T_init[0]#random.multivariate_normal(T_init[0],0*T_init[1])
+                else:
+                    self.data[tuple(element)] = random.multivariate_normal(T_init[0],T_init[1])
         
-        # Renormalize to 1...
-        psi2 = psi2*(dot(psi2,conj(psi2))**-.5)
-        #print psi2
-        
-        # Find the ICs in the SU(N) basis
-        T_init = find_ICs(psi2)
-        #print 'Determinant of Covariance:',linalg.det(T_init[1])
-        if novariance:
-            self.data = random.multivariate_normal(T_init[0],0*T_init[1],size=self.data.shape[0:-1])
         else:
-            self.data = random.multivariate_normal(T_init[0],T_init[1],size=self.data.shape[0:-1])
-
+            # Convert ICs to the Z-basis
+            wm = {'x':0,'y':1,'z':2}
+            psi2 = zeros(self.params['SU'])*1j
+            for x in psi:
+                psi2 += x[2]*linalg.eig(self.basis[:,:,wm[x[0]]])[1][:,x[1]]
+            
+            # Renormalize to 1...
+            psi2 = psi2*(dot(psi2,conj(psi2))**-.5)
+            #print psi2
+            
+            # Find the ICs in the SU(N) basis
+            T_init = find_ICs(psi2)
+            #print 'Determinant of Covariance:',linalg.det(T_init[1])
+            if novariance:
+                self.data = random.multivariate_normal(T_init[0],0*T_init[1],size=self.data.shape[0:-1])
+            else:
+                self.data = random.multivariate_normal(T_init[0],T_init[1],size=self.data.shape[0:-1])
+    
 
 
     def run(self,T,dt,dt_obs=Inf):
@@ -197,6 +224,16 @@ class observable():
                     self.T[self.index]=T
                     self.index+=1
                     return average(data[:,:,7])*sqrt(2)
+        
+        elif self.mask=='diffusion':
+            if data.shape[2]==8:
+                self.data[self.index] = (data[0,0,2]+1)/sum(data[:,:,2]+1)
+            if data.shape[2]==15:
+                self.data[self.index] = (data[0,0,2]*1.58+0.5)/sum(data[:,:,0:3]*1.58+0.5)
+                
+            self.T[self.index]=T
+            self.index+=1
+            return self.data[self.index-1]
         else:
             raise 'Bad mask'
 

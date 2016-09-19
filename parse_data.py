@@ -161,6 +161,11 @@ def new_parse2(filename,header_only=False):
     for line in data[0].split('\n')[0:-1]:
         config_data[line.split(':\t')[0]] = line.split(':\t')[1]
     
+    if header_only==True:
+        for k in config_data:
+            print k,str('\t'),config_data[k]
+        return None,None,config_data
+            
     dat_out_list = []
     for dats in data[1::]:
         try:    
@@ -186,6 +191,9 @@ def new_parse2(filename,header_only=False):
     num_obs = int(double(config_data['T'])/double(config_data['tobs']))+1
     TT = linspace(0,double(config_data['T']),num_obs)
     
+    if len(dat_out_list)==0:
+        print 'No data!'
+        return None,None,config_data
     if len(dat_out_list[0])==num_obs: #1d data
         #print average(dat_out_arr,0).shape
         #print TT.shape

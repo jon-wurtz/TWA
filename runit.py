@@ -21,7 +21,9 @@ if __name__=="__main__":
     linecount = 1
     config_data = {}
     while line:
+        print line
         linesplit = line.split(':')
+        print linesplit
         linecount +=1
             
         config_data[linesplit[0].strip()]=linesplit[1].strip()
@@ -79,18 +81,35 @@ if __name__=="__main__":
             params = Hubbard_SUN(int(config_data['dim']),int(config_data['sies']),double(config_data['J']),double(config_data['U']),int(config_data['SU']),domeanfield)
         else:
             params = Hubbard_SUN(int(config_data['dim']),int(config_data['sies']),double(config_data['J']),double(config_data['U']),config_data['SU'],domeanfield)
-    params['verbose']='f'
+    params['verbose']='t'
     params['obs']=observable(obs_var,int(double(config_data['T'])/double(config_data['tobs']))+1)
 
         
     di = doIT(params)
     
+    # Step 2.5: Add more specific ICs if necessary...
+    if config_data['IC'].strip()=='diffusion':
+        # Hardcoded diffusion parameters...
+        inICs = zeros(di.data.shape[0:-1]).astype(object)
+        if int(config_data['dim'])==2:
+            for i in range(int(config_data['sies'])):
+                for j in range(int(config_data['sies'])):
+                    if i==0 and j==0:
+                        inICs[i,j] = [['z',1,1]]
+                    else:
+                        inICs[i,j] = [['z',2,1]]
+                
+        
+        else:
+            raise 'Dim 2 only, becase Im lazy!'
+    else:
+        inICs = eval(config_data['IC'].strip())
     
     # Step 3: Run it!!
     for i in range(int(config_data['ncycles'])):
         print i
         di.obs.reset()
-        di.product_IC(eval(config_data['IC'].strip()))
+        di.product_IC(inICs)
         di.run(double(config_data['T']),double(config_data['tstep']),double(config_data['tobs']))
         
         # Save output to file...
