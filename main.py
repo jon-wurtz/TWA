@@ -229,7 +229,7 @@ class observable():
             if data.shape[2]==8:
                 self.data[self.index] = (data[0,0,2]+1)/sum(data[:,:,2]+1)
             if data.shape[2]==15:
-                self.data[self.index] = (data[0,0,2]*1.58+0.5)/sum(data[:,:,0:3]*1.58+0.5)
+                self.data[self.index] = (data[0,0,2]*1.5811383+1.5)/sum(data[:,:,2]*1.5811383+1.5)
                 
             self.T[self.index]=T
             self.index+=1
@@ -373,15 +373,17 @@ def Hubbard_SUN(dim,sies,J,U,N,meanfield=False):
             neighbors = list(array((meshgrid(range(sies),range(sies)))).reshape(2,sies**2).transpose())[1:-1]
         elif dim==3:
             neighbors = list(array((meshgrid(range(sies),range(sies),range(sies)))).reshape(2,sies**3).transpose())[1:-1]
-        
-    for neighbor in neighbors:
-        for UV_ in list(array(nonzero(UV)).transpose()): # I'm an abomination
-            terms.append([[int(UV_[0]),J*UV[UV_[0],UV_[1]]],[int(UV_[1]),neighbor]])
     
+    if J!=0:
+        for neighbor in neighbors:
+            for UV_ in list(array(nonzero(UV)).transpose()): # I'm an abomination
+                terms.append([[int(UV_[0]),J*UV[UV_[0],UV_[1]]],[int(UV_[1]),neighbor]])
+        
     # Define local interactions...
-    Q = real(to_SUbasis(matr_U)) # Assert: it is real.
-    for Q_ in list(array(nonzero(Q)).transpose()):
-        terms.append([ [int(Q_[0]), U*0.5*Q[Q_[0]]] ])
+    if U!=0:
+        Q = real(to_SUbasis(matr_U)) # Assert: it is real.
+        for Q_ in list(array(nonzero(Q)).transpose()):
+            terms.append([ [int(Q_[0]), U*0.5*Q[Q_[0]]] ])
     
     output['terms'] = terms
     return output
