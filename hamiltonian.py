@@ -54,7 +54,7 @@ class hamiltonian():
             Have each bit be (J,[(term,offset),(term,offset),...]) or similar...
             '''
 
-    
+        
     
     def dH(self,data,ind):
         '''

@@ -307,7 +307,7 @@ def local_Hubbard_SU4():
     output['terms'] = terms
     return output
 
-def Hubbard_SUN(dim,sies,J,U,N,meanfield=False):
+def Hubbard_SUN(dim,sies,J,U,N,meanfield=False,mu_fname=None):
     '''
     Paramaters for a SU(N) Bose-Hubbard model.
     here, we use the matrices for boson raising and lowering operators,
@@ -345,9 +345,11 @@ def Hubbard_SUN(dim,sies,J,U,N,meanfield=False):
     if N==4:
         matr_a = diag([sqrt(3),sqrt(2),1],k=1) # the a+ operator
         matr_U = diag([3,0,-1,0]) # U*n(n-2)
+        matr_mu = diag([3,2,1,0])
     elif N==3:
         matr_a = diag([sqrt(2),1],k=1) # the a+ operator
         matr_U = diag([0,-1,0]) # U*n(n-1)
+        matr_mu = diag([2,1,0])
     elif N=='old':
         matr_a = diag([sqrt(2),sqrt(2)],k=1) # the S+ operator
         matr_U = diag([0,-1,0]) # U*n(n-2)
@@ -380,10 +382,19 @@ def Hubbard_SUN(dim,sies,J,U,N,meanfield=False):
                 terms.append([[int(UV_[0]),J*UV[UV_[0],UV_[1]]],[int(UV_[1]),neighbor]])
         
     # Define local interactions...
-    if U!=0:
-        Q = real(to_SUbasis(matr_U)) # Assert: it is real.
-        for Q_ in list(array(nonzero(Q)).transpose()):
-            terms.append([ [int(Q_[0]), U*0.5*Q[Q_[0]]] ])
+    Q = real(to_SUbasis(matr_U)) # Assert: it is real.
+    for Q_ in list(array(nonzero(Q)).transpose()):
+        terms.append([ [int(Q_[0]), U*0.5*Q[Q_[0]]] ])
+    
+    # Define Chemical Potential (if its there)
+    if mu_fname!=None and type(N)==int:
+        f = open(mu_fname,'rb')
+        print 'Loading chemical potential data!'
+        mu = loadtxt(f)
+        f.close()
+        R = real(to_SUbasis(matr_mu))
+        for R_ in list(array(nonzero(R)).transpose()):
+            terms.append([ [int(R_[0]), mu*R[R_[0]]] ])
     
     output['terms'] = terms
     return output

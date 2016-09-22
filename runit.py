@@ -82,7 +82,7 @@ if __name__=="__main__":
         else:
             params = Hubbard_SUN(int(config_data['dim']),int(config_data['sies']),double(config_data['J']),double(config_data['U']),config_data['SU'],domeanfield)
     params['verbose']='t'
-    params['obs']=observable(obs_var,int(double(config_data['T'])/double(config_data['tobs']))+1)
+    params['obs']=observable(obs_var,int(double(config_data['T'])/double(config_data['tobs']))+3)
 
         
     di = doIT(params)
@@ -95,7 +95,7 @@ if __name__=="__main__":
         elif params['SU']==4:
             states = [2,3]
         else:
-            raise 'Something went Wrong!
+            raise 'Something went Wrong!'
         inICs = zeros(di.data.shape[0:-1]).astype(object)
         if int(config_data['dim'])==2:
             for i in range(int(config_data['sies'])):
