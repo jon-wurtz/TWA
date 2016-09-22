@@ -2,7 +2,24 @@
 """
 Created on Thu Sep 01 13:19:47 2016
 
-High-level code to run sims
+High-level code to run sims.
+
+Parameters are described in a config file.
+Parameters include the following. Those marked with * are not necessary.
+J:          Interaction Strength
+outfile:    File where data is stored
+U:          Self-interaction
+dim:        Dimension {1,2,3}
+sies:       Size per side. <30?
+IC:         Initial condition, passed directly to doIT.product_IC()
+tstep:      the Timestep
+T:          the Total time elapsed
+tobs:       Time between observations
+ncycles:    Number of times to repeat a run
+*SU:        the group under; passed to hubbard_SUN(). {3,4,'old','SU3'}. If none, hubbard_SU3()
+*obs:       observable. Passed to observable class. If none, 'superfluid'
+*mu:        Disorder potential filename. If none, then no disorder.
+*meanfield: do meanfield interaction {'t','f'}. If none, then 'f'
 
 @author: Jonathan Wurtz
 """
@@ -12,9 +29,13 @@ from main import *
 
 if __name__=="__main__":
     
-    # Step 1: Load stuff from the configuration file
-    config_file = 'config.conf'#sys.argv[1]
     
+
+    # Step 1: Load stuff from the configuration file
+    if len(sys.argv)>1: # Put in place so I can run things on my laptop from F5...
+        config_file = sys.argv[1]
+    else:
+        config_file = 'config.conf'
     
     f = open(config_file)
     line = f.readline()
@@ -37,18 +58,6 @@ if __name__=="__main__":
     # Check if the outfile is present... if its not, lets fail /before/ doing work.
     if 'outfile' not in config_data:
         raise 'No outfile defined!'
-    '''
-    print 'J:',J
-    print 'U:',U
-    print 'dim:',dim
-    print 'sies:',sies
-    print 'IC:',IC
-    print 'tstep:',tstep
-    print 'T:',T
-    print 'tobs:',tobs
-    print 'ncycles:',ncycles
-    print 'outfile:',outfile
-    '''
     
     # Output configuration data to file
     f = open(config_data['outfile'],'w')
@@ -62,7 +71,7 @@ if __name__=="__main__":
     
     # Step 2:Set up our smulation
     
-    # Check for Mean-Field condition...
+    # Check default values...
     if 'meanfield' in config_data:
         domeanfield = (config_data['meanfield']=='t')
     else:
@@ -83,7 +92,7 @@ if __name__=="__main__":
             params = Hubbard_SUN(int(config_data['dim']),int(config_data['sies']),double(config_data['J']),double(config_data['U']),int(config_data['SU']),domeanfield,mu_fname=config_data['mu'])
         else:
             params = Hubbard_SUN(int(config_data['dim']),int(config_data['sies']),double(config_data['J']),double(config_data['U']),config_data['SU'],domeanfield,mu_fname=config_data['mu'])
-    params['verbose']='t'
+    #params['verbose']='t'
     params['obs']=observable(obs_var,int(double(config_data['T'])/double(config_data['tobs']))+3)
 
         
@@ -122,13 +131,6 @@ if __name__=="__main__":
         
         # Save output to file...
         di.obs.put(config_data['outfile'])
-        '''
-        f = open(config_data['outfile'],'a')
-        for j in range(len(di.obs.data)):
-            print >>f,di.obs.T[j],di.obs.data[j]
-        print >>f,'--- End of Run ---'
-        f.close()
-        '''
         
         
     
