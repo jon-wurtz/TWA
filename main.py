@@ -234,6 +234,16 @@ class observable():
             self.T[self.index]=T
             self.index+=1
             return self.data[self.index-1]
+        elif self.mask=='checkerboard':
+            if data.shape[2]==8: # The following accesses all checkerboard bits...
+                self.data[self.index] = sum(data[0::2,0::2,2] + data[1::2,1::2,2] - data[0::2,1::2,2] - data[1::2,0::2,2])/sum(data[:,:,2]+1)
+            if data.shape[2]==15:
+                self.data[self.index] = 1.5811383*sum(data[0::2,0::2,2] + data[1::2,1::2,2] - data[0::2,1::2,2] - data[1::2,0::2,2])/sum(data[:,:,2]*1.5811383+1.5)
+                
+            self.T[self.index]=T
+            self.index+=1
+            return self.data[self.index-1]
+            
         else:
             raise 'Bad mask'
 

@@ -119,6 +119,23 @@ if __name__=="__main__":
         
         else:
             raise 'Dim 2 only, becase Im lazy!'
+    elif config_data['IC'].strip()=='checkerboard':
+        # Hardcoded diffusion parameters...
+        if params['SU']==3:
+            states = [1,2]
+        elif params['SU']==4:
+            states = [2,3]
+        else:
+            raise 'Something went Wrong!'
+        inICs = zeros(di.data.shape[0:-1]).astype(object)
+        if int(config_data['dim'])==2:
+            for i in range(int(config_data['sies'])):
+                for j in range(int(config_data['sies'])):
+                    if round((i+j)/2.)==(i+j)/2.: # Checkerboard pattern!
+                        inICs[i,j] = [['z',states[0],1]]
+                    else:
+                        inICs[i,j] = [['z',states[1],1]]
+                        
     else:
         inICs = eval(config_data['IC'].strip())
     
