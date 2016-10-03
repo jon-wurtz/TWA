@@ -27,10 +27,12 @@ class doIT():
         #self.f_abc = fabc.SU_sparse(params['SU'])
         if params['SU']==3:
             self.f_abc = old_SU3_fabc()
+            self.fabc = old_SU3_fabc(False)
             self.basis = old_SU3()
         elif params['SU']==4:
             self.f_abc = SU_4_basis()[1]
             self.basis = SU_4_basis()[0]
+            self.fabc = SU_4_basis()[2]
         else:
             raise 'SU != {3,4}'
         
@@ -51,6 +53,10 @@ class doIT():
                 raise 'ICs are the wrong shape!!'
             
         self.params = params
+        
+        self.T_old = 0
+        self.T_hamiltonian = 0
+        self.T_dotprods = 0
         
     def product_IC(self,psi,novariance=False):
         '''
@@ -106,7 +112,7 @@ class doIT():
     
 
 
-    def run(self,T,dt,dt_obs=Inf):
+    def run(self,T,dt,dt_obs=Inf,stepmethod='new'):
         if dt>(dt_obs/2):
             print 'Its going to be slow going with this many observations'
         tt = 0
@@ -117,18 +123,58 @@ class doIT():
                 tt+=dt_obs
                 if 't' in self.params['verbose']:
                     print tt,str('\t'),T,str('\t'),printit
-            
-            if self.dim==2:
-              for abc in self.f_abc: # Use sparse f_abc...
-                self.data[:,:,abc[0]] += dt*abc[3]*self.data[:,:,abc[2]]*self.H.dH(self.data,abc[1])
-            elif self.dim==3:
-              for abc in self.f_abc: # Use sparse f_abc...
-                self.data[:,:,:,abc[0]] += dt*abc[3]*self.data[:,:,:,abc[2]]*self.H.dH(self.data,abc[1])
-            elif self.dim==1:
-              for abc in self.f_abc: # Use sparse f_abc...
-                self.data[:,abc[0]] += dt*abc[3]*self.data[:,abc[2]]*self.H.dH(self.data,abc[1])
+
+            if stepmethod=='old':
+                d_dat = zeros(self.data.shape)
+                if self.dim==2:
+                  for abc in self.f_abc: # Use sparse f_abc...
+                    self.data[:,:,abc[0]] += dt*abc[3]*self.data[:,:,abc[2]]*self.H.dH(self.data,abc[1])
+                elif self.dim==3:
+                  for abc in self.f_abc: # Use sparse f_abc...
+                    d_dat[:,:,:,abc[0]] += dt*abc[3]*self.data[:,:,:,abc[2]]*self.H.dH(self.data,abc[1])
+                elif self.dim==1:
+                  for abc in self.f_abc: # Use sparse f_abc...
+                    d_dat[:,abc[0]] += dt*abc[3]*self.data[:,abc[2]]*self.H.dH(self.data,abc[1])
+                else:
+                    raise 'Something has gone wrong!'
+                self.data += d_dat
+            elif stepmethod=='new':
+
+                d_H = zeros(self.data.shape)
+                for i in range(self.data.shape[2]):
+                    if len(self.data.shape)==2: #1d
+                        d_H[:,i] = self.H.dH(self.data,i)
+                    elif len(self.data.shape)==3: #2d
+                        d_H[:,:,i] = self.H.dH(self.data,i)
+                    elif len(self.data.shape)==4: #3d
+                        d_H[:,:,:,i] = self.H.dH(self.data,i)
+
+                # Find the rotation matrices...
+                lambda_rot = einsum('klm,...l',self.fabc,d_H)
+                lambda_N = einsum('...,ij->...ij',ones(self.data.shape[0:-1]),identity(self.data.shape[-1]))
+                m_rot = zeros(lambda_N.shape)
+                
+                # Find the approximate exponential (much faster then scipy.linalg.expm)
+
+                for i in range(4):
+                    m_rot += lambda_N*(dt**i)/math.factorial(i)
+                    lambda_N = einsum('...ij,...jk',lambda_N,lambda_rot)
+                m_rot += lambda_N*(dt**(1+i))/math.factorial(i+1)
+                '''
+                for i in range(lambda_rot.shape[0]):
+                    for j in range(lambda_rot.shape[1]):
+                        m_rot[i,j,:,:] = scipy.linalg.expm(dt*lambda_rot[i,j,:,:])
+                '''
+                # Do the dot product to rotate within each SU(N) group
+                self.data = einsum('...ij,...j->...i',m_rot,self.data)
             else:
-                raise 'Something has gone wrong!'
+                raise 'Bad stepmethod input'
+
+            
+            
+            
+            
+                    
             
 
 

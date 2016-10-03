@@ -24,7 +24,7 @@ def old_SU3():
     
     return M
 
-def old_SU3_fabc():
+def old_SU3_fabc(sparse=True):
     '''
     Structure functions for SU(3)
     '''
@@ -46,8 +46,15 @@ def old_SU3_fabc():
         for i in range(3):
             f_abc.append([gen[(0+i)%3]-1,gen[(1+i)%3]-1,gen[(2+i)%3]-1,gen[3]])
             f_abc.append([gen[(0+i)%3]-1,gen[(2+i)%3]-1,gen[(1+i)%3]-1,-gen[3]])
-    
-    return f_abc
+    if sparse==True:
+        return f_abc
+    elif sparse==False:
+        fabc = zeros([8,8,8])
+        for mu in f_abc:
+            fabc[mu[0],mu[1],mu[2]] = mu[3]
+        return fabc
+    else:
+        raise 'Bad Sparse input!'
 
 def find_ICs(ICs):
     '''
@@ -195,7 +202,7 @@ def SU_4_basis(checkit=False):
         print 'Anti-symmetric under permutations:',truth
         
     # f_abc is also here, which is a not-sparse-matrix.
-    return M,fabc
+    return M,fabc,f_abc
     
 
 def to_SUbasis(matr):

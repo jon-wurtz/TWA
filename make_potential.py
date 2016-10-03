@@ -25,7 +25,7 @@ def make_random_potential(dim,sies,npix_corrlength,strength,fname,plotit=False):
         mask = exp(-(L**-2)*(xx[0]**2 + xx[1]**2 + xx[2]**2))
     if dim==1:
         xx = meshgrid(linspace(-10,10,sies))
-        mask = exp(-(L**-2)*(xx[0]**2))
+        mask = exp(-sqrt((L**-2)*(xx[0]**2)))
     
     datF = real(fft.ifftn(fft.fftshift(mask)*fft.fftn(dat)))  
     # Normalize...
